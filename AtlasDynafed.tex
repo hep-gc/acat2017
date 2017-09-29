@@ -1,5 +1,7 @@
 \documentclass[a4paper]{jpconf}
 \usepackage{graphicx}
+\usepackage{iopams}
+\usepackage{hyperref}
 \begin{document}
 \title{Federating Distributed Storage For Clouds In ATLAS}
 
@@ -10,11 +12,11 @@
 \ead{frank.berghaus@cern.ch}
 
 \begin{abstract}
-Input data for applications that run in cloud computing centres can be stored at distant repositories, often with multiple copies of the popular data stored at many sites. Locating and retrieving the remote data can be challenging, and we believe that federating the storage can address this problem. A federation would locate the closest copy of the data on the basis of GeoIP information. Currently we are using the dynamic data federation (DynaFed) software solution developed by CERN IT. DynaFed supports several industry standards for connection protocols like Amazon's S3, Microsofts Azure, as well as WebDAV and HTTP. Protocol dependent authentication is hidden from the user by using their X509 certificate. We have setup an instance of DynaFed and integrated it into the ATLAS Data Distribution Management system. We report on the challenges faced during the installation and integration. We have tested ATLAS analysis jobs submitted by the PanDA production system and we report on our first experiences with its operation.
+Input data for applications that run in cloud computing centres can be stored at distant repositories, often with multiple copies of the popular data stored at many sites. Locating and retrieving the remote data can be challenging, and we believe that federating the storage can address this problem. A federation would locate the closest copy of the data on the basis of GeoIP information. Currently we are using the dynamic data federation DynaFed~\cite{dynafed} software solution developed by CERN IT. DynaFed supports several industry standards for connection protocols like Amazon's S3, Microsofts Azure, as well as WebDAV and HTTP. Protocol dependent authentication is hidden from the user by using their X509 certificate. We have setup an instance of DynaFed and integrated it into the ATLAS Data Distribution Management system. We report on the challenges faced during the installation and integration. We have tested ATLAS analysis jobs submitted by the PanDA production system and we report on our first experiences with its operation.
 \end{abstract}
 
 \section{Introduction}
-These guidelines show how to prepare articles for publication in \jpcs\ using \LaTeX\ so they can be published quickly and accurately. Articles will be refereed by the \corg s but the accepted PDF will be published with no editing, proofreading or changes to layout. It is, therefore, the author's responsibility to ensure that the content and layout are correct.  This document has been prepared using \cls\ so serves as a sample document. The class file and accompanying documentation are available from \verb"http://jpcs.iop.org".
+Our goal is run data-intensive applications on globally distributed opportunistic resources that have no local grid storage. We want to use a data federation, such as DynaFed [1] to redirect the applications to the optimal storage endpoint to retrieve input or deposit output data.
 
 \section{Preparing your paper}
 \verb"jpconf" requires \LaTeXe\ and  can be used with other package files such
@@ -495,6 +497,8 @@ Using the graphicx package figures can be included using code such as:
 \section*{References}
 \begin{thebibliography}{9}
 \bibitem{iopartnum} IOP Publishing is to grateful Mark A Caprio, Center for Theoretical Physics, Yale University, for permission to include the {\tt iopart-num} \BibTeX package (version 2.0, December 21, 2006) with  this documentation. Updates and new releases of {\tt iopart-num} can be found on \verb"www.ctan.org" (CTAN).
+\bibitem{dynafed} Furano~F {\it et al}, 2017, Dynafed -- The Dynamic Federation project, \url{http://cern.ch/lcgdm/dynafed-dynamic-federation-project}
+
 \end{thebibliography}
 
 \end{document}
