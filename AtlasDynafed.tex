@@ -33,6 +33,16 @@ The ATLAS experiment leverages the resources of the Worldwide LHC Computing Grid
 Cloud storage systems are object stores that expose a well defined interface over HTTP and WebDAV. DynaFed also allows the inclusion of these cloud storage into the a grid system. DynaFed implements authentication through public key infrastructure with grid extensions~\cite{voms} and translates this authentication to authorize access to the cloud storage systems which each have their own authentication and authorization paradigms. Thus a grid user or application authenticates to DynaFed using grid credentials and is forwarded to a pre-signed URL that permits, for a limited time, access to the cloud storage system.
 
 \section{Data Access}
+The DynaFed instance regularly polls all connected endpoints to determine if they are reachable. Should an endpoint become unresponsive no requests will be forwarded to it until it responds again. This dynamically adjusts for storage endpoint failures and should increase the stability of the storage system as a whole.
+
+Figure~\ref{fig:dynafed-arch} illustrated the task division in the dynamic federation handle client requests. When the dynamic federation receives a requests for a while in it's namespace the client is authenticated. Once the request has been authenticated the name is looked up in the cached. If a cached entry exists that entry is returned. If the cache does not contain an entry for the queried file the name of the file is translated to each of the endpoints and the endpoints are queried. The federation waits for a response from all endpoints up to some timeout. The response is cached and the client is redirected to the geographically closest copy of the data. It is also possible to query a metalink which returns a XML list of all copies of the queried file. In the future we wish to implement chunked downloads from multiple locations using this metalink and the area2c copy tool. Should the client make a request to write dynafed redirects the client to the geographically closest writeable storage element.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{dynafed-arch.png}
+  \caption{The dynamic web federation is an apache we server running the LCGDM implementation of WebDAV. The namespace generally managed by LCGDM has been replaced by the uniform general redirector which translates the requests to the web file system to the connected endpoints. The endpoint module handle the communicate with the connected endpoints. All requests are cached in memory on the server as well as in a second level cache which may be shared across multiple load-balanced servers.}
+  \label{fig:dynafed-arch}
+\end{figure}
 
 
 \section{Application Workflow}
@@ -41,7 +51,8 @@ Cloud storage systems are object stores that expose a well defined interface ove
 \section{Summary}
 
 
-\section*{Acknowledgments}
+%\section*{Acknowledgments}
+\ack
 Authors wishing to acknowledge assistance or encouragement from
 colleagues, special work by technical staff or financial support from
 organizations should do so in an unnumbered Acknowledgments section
