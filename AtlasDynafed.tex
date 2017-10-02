@@ -35,8 +35,6 @@ Cloud storage systems are object stores that expose a well defined interface ove
 \section{Data Access}
 The DynaFed instance regularly polls all connected endpoints to determine if they are reachable. Should an endpoint become unresponsive no requests will be forwarded to it until it responds again. This dynamically adjusts for storage endpoint failures and should increase the stability of the storage system as a whole.
 
-Figure~\ref{fig:dynafed-arch} illustrated the task division in the dynamic federation handle client requests. When the dynamic federation receives a requests for a while in it's namespace the client is authenticated. Once the request has been authenticated the name is looked up in the cached. If a cached entry exists that entry is returned. If the cache does not contain an entry for the queried file the name of the file is translated to each of the endpoints and the endpoints are queried. The federation waits for a response from all endpoints up to some timeout. The response is cached and the client is redirected to the geographically closest copy of the data. It is also possible to query a metalink which returns a XML list of all copies of the queried file. In the future we wish to implement chunked downloads from multiple locations using this metalink and the area2c copy tool. Should the client make a request to write dynafed redirects the client to the geographically closest writeable storage element.
-
 \begin{figure}
   \centering
   \includegraphics[width=\textwidth]{dynafed-arch.png}
@@ -44,8 +42,17 @@ Figure~\ref{fig:dynafed-arch} illustrated the task division in the dynamic feder
   \label{fig:dynafed-arch}
 \end{figure}
 
+Figure~\ref{fig:dynafed-arch} illustrated the task division in the dynamic federation handle client requests. When the dynamic federation receives a requests for a while in it's namespace the client is authenticated. Once the request has been authenticated the name is looked up in the cached. If a cached entry exists that entry is returned. If the cache does not contain an entry for the queried file the name of the file is translated to each of the endpoints and the endpoints are queried. The federation waits for a response from all endpoints up to some timeout. The response is cached and the client is redirected to the geographically closest copy of the data. It is also possible to query a metalink which returns a XML list of all copies of the queried file. In the future we wish to implement chunked downloads from multiple locations using this metalink and the area2c copy tool. Should the client make a request to write dynafed redirects the client to the geographically closest writeable storage element.
+
 
 \section{Application Workflow}
+The goal of this project is to integrate the dynamic federation into the ATLAS and Belle-II distributed computing and data management systems. Here we will focus on the ATLAS system since the integration into PanDA~\cite{panda} and Rucio is more mature.
+
+\begin{figure}
+  \includegraphics[width=\textwidth]{atlas-cloud-system.png}
+  \caption{Infrastructure-as-a-Service clouds have been integrated into the ATLAS production system }
+  \label{fig:atlas-cloud}
+\end{figure}
 
 
 \section{Summary}
@@ -53,12 +60,11 @@ Figure~\ref{fig:dynafed-arch} illustrated the task division in the dynamic feder
 
 %\section*{Acknowledgments}
 \ack
-Authors wishing to acknowledge assistance or encouragement from
-colleagues, special work by technical staff or financial support from
-organizations should do so in an unnumbered Acknowledgments section
-immediately following the last numbered section of the paper. The
-command \verb"\ack" sets the acknowledgments heading as an unnumbered
-section.
+Should I put people here instead of the long list of authors.
+
+Where does our grant funding come from
+
+ATLAS DDM, ADC, CERN IT/DPM, who else?
 
 
 \section*{References}
@@ -85,6 +91,12 @@ section.
   %``The Anatomy of the Grid: Enabling Scalable Virtual Organizations''
   {\it International Journal of Supercomputer Applications}
   \url{http://www.globus.org/alliance/publications/papers/anatomy.pdf}
+\bibitem{panda}
+  T.Maeno et al
+  2017
+  PanDA
+  \url{http://www.pandawms.org}
+
 
 
 \end{thebibliography}
