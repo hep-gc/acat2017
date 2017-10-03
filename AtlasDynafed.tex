@@ -48,11 +48,14 @@ Figure~\ref{fig:dynafed-arch} illustrated the task division in the dynamic feder
 \section{Application Workflow}
 The goal of this project is to integrate the dynamic federation into the ATLAS and Belle-II distributed computing and data management systems. Here we will focus on the ATLAS system since the integration into PanDA~\cite{panda} and Rucio is more mature.
 
+Currently ATLAS distributed computing takes advantage of volunteer resources~\cite{boinc} and opportunistic cloud resources. The cloud resources are used as the testbed for this work, but the results will be useful for both and hopefully more. Cloud resources are included into ATLAS distributed computing using the cloud scheduler technology as illustrated in figure~\ref{fig:atlas-cloud}. A cloud scheduler requests resources on a cloud in response to load on a batch queue. The pilot which consumes the ATLAS workloads from PanDA is configured to connect to DynaFed for input and output data.
+
 \begin{figure}
   \includegraphics[width=\textwidth]{atlas-cloud-system.png}
-  \caption{Infrastructure-as-a-Service clouds have been integrated into the ATLAS production system }
+  \caption{A client (AutoPyFactory or Harvester) submit pilot wrapper scripts to an HTCondor queue. The queue is monitored by a cloud scheduler. The cloud scheduler makes requests to connected cloud interfaces in response to load on the queue. The cloud infrastructures create virtual machine instances and provide user-data to cloud-init running in the virtual machines for configuration. The VM instances are configured to connect to the condor and start consuming jobs from the queue. The pilot wrapper scripts run on the virtual machines and download the pilot which drains tasks from a PanDA queue. The pilot uses Rucio to download input data and upload results. Rucio is configured to contact the dynamic federation via WebDAV. The federation forwards Rucio to the closest available storage.}
   \label{fig:atlas-cloud}
 \end{figure}
+
 
 
 \section{Summary}
@@ -96,6 +99,11 @@ ATLAS DDM, ADC, CERN IT/DPM, who else?
   2017
   PanDA
   \url{http://www.pandawms.org}
+\bibitem{boinc}
+  Cameron D, Wu W
+  2017
+  LHC@home
+  \url{http://lhcathome.web.cern.ch}
 
 
 
