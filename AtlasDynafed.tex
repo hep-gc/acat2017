@@ -5,7 +5,7 @@
 \begin{document}
 \title{Federating Distributed Storage For Clouds In ATLAS}
 
-\author{Berghaus~F, Casteels~K, Di~Girolamo~A, Driemel~C, Ebert~M, Furano~F, Galindo~F, Lassnig~M, Leavett-Brown~C, Paterson~M, Serfon~C, Seuster~R, Sobie~R, Tafirout~R, Taylor~R~P}
+\author{Berghaus~F, Casteels~K, Driemel~C, Ebert~M, Galindo~F, Leavett-Brown~C, Paterson~M, Seuster~R, Sobie~R, Tafirout~R, Taylor~R~P}
 
 \address{Frank~Berghaus, G07810, CERN, CH-1211 Geneva 23,  Switzerland}
 
@@ -48,7 +48,9 @@ Figure~\ref{fig:dynafed-arch} illustrated the task division in the dynamic feder
 \section{Application Workflow}
 The goal of this project is to integrate the dynamic federation into the ATLAS and Belle-II distributed computing and data management systems. Here we will focus on the ATLAS system since the integration into PanDA~\cite{panda} and Rucio is more mature.
 
-Currently ATLAS distributed computing takes advantage of volunteer resources~\cite{boinc} and opportunistic cloud resources. The cloud resources are used as the testbed for this work, but the results will be useful for both and hopefully more. Cloud resources are included into ATLAS distributed computing using the cloud scheduler technology as illustrated in figure~\ref{fig:atlas-cloud}. A cloud scheduler requests resources on a cloud in response to load on a batch queue. The pilot which consumes the ATLAS workloads from PanDA is configured to connect to DynaFed for input and output data.
+Currently ATLAS distributed computing takes advantage of volunteer resources~\cite{boinc} and opportunistic cloud resources. The cloud resources are used as the testbed for this work, but the results will be useful for both and hopefully more. Cloud resources are included into ATLAS distributed computing using the cloud scheduler technology as illustrated in figure~\ref{fig:atlas-cloud}. A cloud scheduler system executes ATLAS workloads on globally distributed cloud resources. The virtual machine instances that execute the ATLAS workload are configured to connect to DynaFed for input and output data.
+
+Storage backends from the University of Victoria and TRIUMF in Canada as well as the University of Edinburough and CERN in Europe are connected to the dynamic federation. Input data was copied to the federation using the file transfer service~\cite{fts3} at CERN. The data sets were manually registered with Rucio. With the input datasets registered we executed functional tests on virtual machine workers that ran on the CERN OpenStack cloud, retrieved their input from a CephS3 interface at CERN through the dynamic federation, and uploaded their logs and results to the same storage upon completion.
 
 \begin{figure}
   \includegraphics[width=\textwidth]{atlas-cloud-system.png}
@@ -56,18 +58,20 @@ Currently ATLAS distributed computing takes advantage of volunteer resources~\ci
   \label{fig:atlas-cloud}
 \end{figure}
 
+For full integration of cloud storage into the ATLAS distributed data management some additional development is necessary: bulk transfers negotiated between storage endpoints using the HTTP and WebDAV protocols must be fully supported and the data management system must be able to parse the checksums of files on cloud storage.
+
+ % The ATLAS experiment uses the adler32 algorithm~\cite{adler32} because it is fast and can perform a checksum of a file copied over multiple streams, while being reliable to ensure the integrity of the ATLAS data catalogue. Cloud storage have chosen to use the well proven MD5 checksum algorithm~\cite{md5}. To fully integrate cloud storage solution in the operating ATLAS distributed data management system we will integrate add the MD5 checksum for files on cloud storage systems. The protocol by which grid and cloud storage notify the client of the file checksum is different also: cloud storage includes the MD5 digest as the value of the ETag in the return header of get and put requests. Grid storage responds with the checksum digest to a header containing the name of the checksum algorithm in the 'Request-Digest' field.
 
 
 \section{Summary}
+It was shown that ATLAS functional tests can retrieve and deposit their data on a cloud storage accessed over the WebDAV protocol using a dynamic federation. The functional tests ran on virtual machine instances in a cloud infrastructure and could be scheduled anywhere in the distributed cloud system currently running as part of the ATLAS production system. Further development is necessary to execute production jobs against the dynamic federation and for the usage with the Belle-II experiment and thereby the DIRAC workload management system.
 
 
 %\section*{Acknowledgments}
 \ack
-Should I put people here instead of the long list of authors.
+This work was made possible because of the gracious help of many people: the CERN storage team, specifically Fabrizio Furano for their help with the dynamic federation and Dan van~der~Ster with the Ceph S3 cluster, the ATLAS DDM team, especially Mario Lassnig and Cedric Serfon for integrating the dynamic federation with Rucio, and Alessandro di~Girolamo and Ivan Glushkov for their help with the integration into ATLAS distributed computing.
 
-Where does our grant funding come from
-
-ATLAS DDM, ADC, CERN IT/DPM, who else?
+This work was made possible by funding from the (funding agency?).
 
 
 \section*{References}
@@ -89,22 +93,36 @@ ATLAS DDM, ADC, CERN IT/DPM, who else?
   {\it Ann.\ Rev.\ Nucl.\ Part.\ Sci.\ } {\bf 61} 99
   %doi:10.1146/annurev-nucl-102010-130059
 \bibitem{voms}
-  Foster~I, Kesselman~C, Tuecke~S
+  Foster~I, Kesselman~C and Tuecke~S
   2001
-  %``The Anatomy of the Grid: Enabling Scalable Virtual Organizations''
+  ``The Anatomy of the Grid: Enabling Scalable Virtual Organizations''
   {\it International Journal of Supercomputer Applications}
-  \url{http://www.globus.org/alliance/publications/papers/anatomy.pdf}
+  %\url{http://www.globus.org/alliance/publications/papers/anatomy.pdf}
 \bibitem{panda}
-  T.Maeno et al
+  T.Maeno {\it et al}
   2017
   PanDA
   \url{http://www.pandawms.org}
 \bibitem{boinc}
-  Cameron D, Wu W
+  Cameron D and Wu W
   2017
   LHC@home
   \url{http://lhcathome.web.cern.ch}
-
+\bibitem{fts3}
+  CERN IT-ST
+  2017
+  FTS3
+  \url{http://fts3-service.web.cern.ch/}
+\bibitem{adler32}
+  Deutsch P and Gailly J-L
+  1996
+  ``ZLIB Compressed Data Format Specification Version 3.3''
+  IETF RFC 1950
+\bibitem{md5}
+  Rivest R
+  1992
+  ``The MD5 Message-Digest Algorithm''
+  IETF RFC 1321
 
 
 \end{thebibliography}
