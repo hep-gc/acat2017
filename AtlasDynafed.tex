@@ -2,6 +2,12 @@
 \usepackage{graphicx}
 \usepackage{iopams}
 \usepackage{hyperref}
+\usepackage{multirow}
+
+\newcommand{\xdownarrow}[1]{%
+  {\left\downarrow\vbox to #1{}\right.\kern-\nulldelimiterspace}
+}
+
 \begin{document}
 \title{Federating Distributed Storage For Clouds In ATLAS}
 
@@ -36,18 +42,32 @@ The ATLAS experiment leverages the resources of the Worldwide LHC Computing Grid
 Cloud storage systems are object stores that expose a well-defined interface such as S3, Swift, or Azure. DynaFed supports these protocols as storage backends. On the user-facing side DynaFed still presents an HTTP or WebDAV interface implementing authentication and authorization through public key infrastructure with grid extensions~\cite{voms}. When DynaFed forwards clients to cloud storage systems, it translates their grid credentials to pre-signed URL that permit, for a limited time, access to the cloud storage system.
 
 \section{Data Access}
-The dynamic federation used for this work was configured to use three endpoints: one at CERN, one at TRIUMF, and one at the University of Victoria. Each endpoint was a CephS3 object store. Figure~\ref{fig:dynafed-arch} illustrates the task division within the dynamic federation to handle client requests.
+The dynamic federation used for this work was configured to use three endpoints: one at CERN, one at TRIUMF, and one at the University of Victoria. Each endpoint was a CephS3 object store. Figure~\ref{tab:dynafed-arch} illustrates the task division within the dynamic federation to handle client requests.
 
 To access data through DynaFed a client makes a request for a file using WebDAV or HTTP. WebDAV is the appropriate protocol for interacting with files and file systems, so we will focus on it from here on. In our configuration the DynaFed only allows access to members of the ATLAS Virtual Organization. That means the client must provide either a certificate and key combination or a proxy credential with the request. The credential must be signed by a trusted certificate authority. If the credential contains VOMS extensions certifying the user to be a member of the ATLAS collaboration, access is granted. Should the client provide an X509 credential without VOMS extensions the DynaFed checks that credential against all current members of the ATLAS collaboration and grants access if a match is found. Finally, there are privileged accounts for administrators and data management services. Authorized clients are redirected to a signed URL on the closest CephS3 endpoint. Authorization is granted explicitly for reading, writing, listing, and/or deleting operations.
 
 When a file is requested the dynamic federation checks whether the locations of the file are already in its cache. If so the cached entry is used, otherwise each endpoint is queried for the file after name translation to that endpoint. DynaFed waits for responses up to some given timeout\footnote{Set to 3~seconds here}. Responses are collected and cached. The resulting endpoints are evaluated for proximity to the client and the client is redirected to the closest copy. The DynaFed regularly polls all connected endpoints to determine if they are reachable. Should an endpoint be unresponsive, requests will not be forwarded to it. This should increase the stability of the storage system as a whole by dynamically adapting to storage endpoint failures.
 
-\begin{figure}
+\begin{table}
   \centering
-  \includegraphics[width=\textwidth]{dynafed-arch.png}
   \caption{The dynamic web federation is an Apache server running the LCGDM implementation of WebDAV. The namespace usually managed by LCGDM has been replaced by the uniform general redirector (UGR) which translates the requests to the web file system to the connected endpoints. The endpoint modules handle the communication with the configured endpoints. All requests are cached in memory on the server as well as in a second-level cache which may be shared across multiple load-balanced servers.}
-  \label{fig:dynafed-arch}
-\end{figure}
+  \label{tab:dynafed-arch}
+  \begin{tabular}{ lllp{10cm} }
+  \hline
+  \multicolumn{3}{ l }{Component} & Purpose \\
+  \hline \hline
+  \multirow{8}{*}{$\xdownarrow{1.8cm}$} & \multicolumn{2}{ l }{Apache} & Load the \texttt{lcgdm\_dav} module and start up a WebDAV server \\ \cline{2-4}
+   & \multicolumn{2}{ l }{\texttt{lcgdm\_dav}} & \multirow{2}{10cm}{Configure dmlite and load the uniform general redirector as namespace plugin} \\
+   & \multicolumn{2}{ l }{dmlite} & \\ \cline{2-4}
+   & \multicolumn{2}{ l }{UGR} & Configure authentication and endpoints \\ \cline{3-4}
+   & \multirow{4}{*}{\rotatebox{90}{Plugins}} & dmlite & \multirow{4}{10cm}{Communicate with endpoints on request} \\
+   &  & WebDAV/HTTP &  \\
+   &  & S3 &  \\
+   &  & Azure &  \\ \hline
+   & \multicolumn{2}{ l }{Memcached} & Cache recent redirects to distributed object caching system \\
+  \hline
+  \end{tabular}
+\end{table}
 
  It is also possible to query a metalink which returns a XML list of all copies of the queried file. In the future we wish to implement chunked downloads from multiple locations using this metalink and the aria2c copy tool. Should the client make a request to write, Dynafed redirects the client to the geographically closest writeable storage element.
 
