@@ -19,7 +19,7 @@
 \ead{frank.berghaus@cern.ch}
 
 \begin{abstract}
-Input data for applications that run in cloud computing centres can be stored at distant repositories, often with multiple copies of the popular data stored at many sites. Locating and retrieving the remote data can be challenging, and we believe that federating the storage can address this problem. A federation would locate the closest copy of the data on the basis of GeoIP information. Currently we are using the dynamic data federation DynaFed~\cite{dynafed}, a software solution developed by CERN IT. DynaFed supports several industry standards for connection protocols like Amazon's S3, Microsoft's Azure, as well as WebDAV and HTTP. Dynafed functions as an abstraction layer under which protocol-dependent authentication details are  hidden from the user, requiring the user to only provide an X509 certificate. We have setup an instance of DynaFed and integrated it into the ATLAS Data Distribution Management system. We report on the challenges faced during the installation and integration. We have tested ATLAS analysis jobs submitted by the PanDA production system and we report on our first experiences with its operation.
+Input data for applications that run in cloud computing centres can be stored at distant repositories, often with multiple copies of the popular data stored at many sites. Locating and retrieving the remote data can be challenging, and we believe that federating the storage can address this problem. A federation would locate the closest copy of the data on the basis of GeoIP information. Currently we are using the dynamic data federation DynaFed~\cite{dynafed}, a software solution developed by CERN IT. DynaFed supports several industry standards for connection protocols like Amazon's S3, Microsoft's Azure, as well as WebDAV and HTTP. Dynafed functions as an abstraction layer under which protocol-dependent authentication details are  hidden from the user, requiring the user to only provide an X509 certificate. We have setup an instance of DynaFed and integrated it into the ATLAS Data Distribution Management system. We report on the challenges faced during the installation and integration. We have tested ATLAS analysis jobs submitted by the PanDA~\cite{panda} production system and we report on our first experiences with its operation.
 \end{abstract}
 
 \section{Introduction}
@@ -50,7 +50,7 @@ When a file is requested the dynamic federation checks whether the locations of 
 
 \begin{table}
   \centering
-  \caption{The dynamic web federation is an Apache server running the LCGDM implementation of WebDAV. The namespace usually managed by LCGDM has been replaced by the uniform general redirector (UGR) which translates the requests to the web file system to the connected endpoints. The endpoint modules handle the communication with the configured endpoints. All requests are cached in memory on the server as well as in a second-level cache which may be shared across multiple load-balanced servers.}
+  \caption{The dynamic web federation is an Apache running the LCGDM implementation of WebDAV. The namespace usually managed by LCGDM has been replaced by the uniform general redirector (UGR) which translates the requests to the web file system to the connected endpoints. The endpoint modules handle the communication with the configured endpoints. All requests are cached in memory on the server as well as in a second-level cache which may be shared across multiple load-balanced servers.}
   \label{tab:dynafed-arch}
   \begin{tabular}{ lllp{10cm} }
   \hline
@@ -73,9 +73,9 @@ When a file is requested the dynamic federation checks whether the locations of 
 
 
 \section{Application Workflow}
-In order to integrate the dynamic federation into the ATLAS distributed computing and data management system, it was defined as a storage element associated with the \textrm{CERN-EXTENSION} grid site. It was configured to be accessible using WebDAV and flagged as special in the ATLAS grid information system to allow Rucio to select a n implementation of a copy tool that does not move or rename files.
+In order to integrate the dynamic federation into the ATLAS distributed computing and data management system, it was defined as a storage element associated with the \textrm{CERN-EXTENSION} grid site. It was configured to be accessible using WebDAV and flagged as special in the ATLAS grid information system to allow Rucio~\cite{rucio} to select a n implementation of a copy tool that does not move or rename files.
 
-The input datasets for analysis and production functional tests were transferred to the dynamic federation using the file transfer service~\cite{fts3} at CERN. Once the transfers completed successfully the data was registered manually in the Rucio data catalogue.
+The input datasets for analysis and production functional tests were transferred to the dynamic federation using the file transfer service at CERN. Once the transfers completed successfully the data was registered manually in the Rucio data catalogue.
 
 With the input data registered in the Rucio data catalogue it was possible to run grid jobs against the data in the dynamic federation. The jobs were executed on virtual machines hosted on the CERN OpenStack using the Cloud Scheduler technology system illustrated in figure~\ref{fig:atlas-cloud}. The resulting data and logs were uploaded to the CephS3 storage via DynaFed upon job completion.
 
@@ -97,6 +97,12 @@ It was shown that ATLAS jobs can retrieve and deposit their data on a cloud stor
   2017
   \url{http://cern.ch/lcgdm/dynafed-dynamic-federation-project}
 
+\bibitem{panda}
+  Maeno T
+  2008
+  PanDA : Distributed Production and Distributed Analysis System for ATLAS
+  {\it Journal for Physics} {\bf 119} 6
+
 \bibitem{cloud-scheduler}
   Cloud Scheduler [Computer Software]
   2017
@@ -115,7 +121,7 @@ It was shown that ATLAS jobs can retrieve and deposit their data on a cloud stor
 \bibitem{s3}
   Amazon Simple Storage Service [Computer Software]
   2006
-  \url{https://aws.amazon.com/s3/}
+  \url{https://aws.amazon.com/s3}
 
 \bibitem{wlcg}
   Bird~I
@@ -127,32 +133,23 @@ It was shown that ATLAS jobs can retrieve and deposit their data on a cloud stor
   2001
   The Anatomy of the Grid: Enabling Scalable Virtual Organizations
   {\it International Journal of Supercomputer Applications} {\bf 15} 3 200 - 222
-\bibitem{panda}
-  Maeno T
-  2008
-  PanDA : Distributed Production and Distributed Analysis System for ATLAS
-  {\it Journal for Physics} {\bf 119} 6
-\bibitem{boinc}
-  Cameron D and Wu W
+
+\bibitem{rucio}
+  Rucio [Computer Software]
   2017
-  LHC@home
-  \url{http://lhcathome.web.cern.ch}
-\bibitem{fts3}
-  CERN IT-ST
-  2017
-  FTS3
-  \url{http://fts3-service.web.cern.ch/}
-\bibitem{adler32}
-  Deutsch P and Gailly J-L
-  1996
-  ZLIB Compressed Data Format Specification Version 3.3
-  {\it  Internet Engineering Task Force} RFC1950
+  \url{http://rucio.cern.ch}
 
 \bibitem{md5}
   Rivest R
   1992
   The MD5 Message-Digest Algorithm
   {\it  Internet Engineering Task Force} RFC1321
+
+\bibitem{adler32}
+  Deutsch P and Gailly J-L
+  1996
+  ZLIB Compressed Data Format Specification Version 3.3
+  {\it  Internet Engineering Task Force} RFC1950
 
 \bibitem{content-md5}
   Myers J
@@ -165,6 +162,12 @@ It was shown that ATLAS jobs can retrieve and deposit their data on a cloud stor
   2002
   Instance Digests in HTTP
   {\it  Internet Engineering Task Force} RFC3230
+
+\bibitem{boinc}
+  Cameron D and Wu W
+  2017
+  LHC@home
+  \url{http://lhcathome.web.cern.ch}
 
 \end{thebibliography}
 
