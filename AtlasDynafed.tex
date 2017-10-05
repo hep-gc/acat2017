@@ -16,11 +16,11 @@ Input data for applications that run in cloud computing centres can be stored at
 \end{abstract}
 
 \section{Introduction}
-Our goal is run data-intensive applications on globally distributed opportunistic resources that have no local grid storage. The ATLAS experiment leverages a globally distributed system of infrastructure as a service (IaaS) clouds as part of its distributed computing system. These resources are integrated into the ATLAS distributed computing system using the cloud scheduler~\cite{cloud-scheduler} technology developed at the University of Victoria. These IaaS resources are used opportunistically, and do not support any local grid infrastructure.
+Our goal is run data-intensive applications on globally distributed opportunistic resources that have no local grid storage. The ATLAS experiment leverages a globally distributed system of infrastructure as a service (IaaS) clouds as part of its distributed computing system. These resources are integrated into the ATLAS distributed computing system using the Cloud Scheduler~\cite{cloud-scheduler} technology developed at the University of Victoria. These IaaS resources are used opportunistically, and do not support any local grid infrastructure.
 
 The workflows executed by high energy physics experiments often demand large volumes of input data or produce a significant volume of output data. We aim to use a data federation, such as DynaFed, to redirect the applications running on opportunistic resources to the optimal storage endpoint to retrieve input or deposit output data. We also aim to integrate storage solutions offered by cloud providers into the ATLAS distributed data management system using DynaFed.
-% TODO insert Cloud Scheduler citation
-In this paper we explain a system leveraging Cloud Ccheduler and DynaFed which successfully executed functional test jobs as part of the ATLAS distributed computing system on the CERN OpenStack~\cite{openstack} cloud resource that read their input from and wrote their output to an object store implemented using Ceph~\cite{ceph} and exposing an S3~\cite{s3} interface.
+
+In this paper we explain a system leveraging Cloud Scheduler and Dynafed which successfully executed functional test jobs as part of the ATLAS distributed computing system on the CERN OpenStack~\cite{openstack} cloud resource that read their input from and wrote their output to an object store implemented using Ceph~\cite{ceph} and exposing an S3~\cite{s3} interface.
 
 \section{Conceptual Design}
 The ATLAS experiment leverages the resources of the Worldwide LHC Computing Grid, WLCG~\cite{wlcg}. The computing centres that are part of the WLCG and support ATLAS provide a global storage infrastructure for the experiment data and simulated events. While the central ATLAS computing infrastructure uses purpose-specific protocols to access the content of these grid storage elements, they can also be accessed using standard protocols, namely HTTP and WebDAV. DynaFed supports storage backends that offer HTTP and WebDAV access and promises sufficient scalability to create the appearance of a single virtual namespace for the entire ATLAS data catalogue.  Figure~\ref{fig:conceptual-design} shows how DynaFed could unify the namespaces of attached storage elements into a single namespace.
@@ -28,9 +28,7 @@ The ATLAS experiment leverages the resources of the Worldwide LHC Computing Grid
 \begin{figure}
   \centering
   \includegraphics[width=\textwidth]{conceptual-design.png}
-  \caption{The dynamic federation is connected to multiple endpoints. Each endpoint may be a file system or an object store accessible using the a protocol %TODO huh??
-  which allows redirection. The dynamic federation provides a namespace that is a union of all the namespaces of the endpoints. That namespace is presented as a regular directory structure on %TODO on? using?
-  the same protocols as exposed by the endpoints. The content of a displayed directory is calculated when accessed.}
+  \caption{The dynamic federation is connected to multiple endpoints. Each endpoint may be a file system or an object store accessible using a protocol which allows redirection, such as WebDAV or HTTP. The dynamic federation provides a namespace that is a union of all the namespaces of the endpoints. That namespace is presented as a regular directory structure by the Dynafed. The content of a displayed directory is calculated when accessed.}
   \label{fig:conceptual-design}
 \end{figure}
 
@@ -54,7 +52,8 @@ When a file is requested the dynamic federation checks whether the locations of 
 
 
 \section{Application Workflow}
-In order to integrate the dynamic federation into the ATLAS distributed computing and data management system, it was defined as a storage element associated with the \textrm{CERN-EXTENSION} grid site. It was configured to be accessible using WebDAV and flagged as special in the ATLAS grid information system. %special how? Need to provide explanatory details or leave this out
+In order to integrate the dynamic federation into the ATLAS distributed computing and data management system, it was defined as a storage element associated with the \textrm{CERN-EXTENSION} grid site. It was configured to be accessible using WebDAV and flagged as special in the ATLAS grid information system to allow Rucio to select a n implementation of a copy tool that does not move or rename files.
+
 The input datasets for analysis and production functional tests were transferred to the dynamic federation using the file transfer service~\cite{fts3} at CERN. Once the transfers completed successfully the data was registered manually in the Rucio data catalogue.
 
 With the input data registered in the Rucio data catalogue it was possible to run grid jobs against the data in the dynamic federation. The jobs were executed on virtual machines hosted on the CERN OpenStack using the Cloud Scheduler technology system illustrated in figure~\ref{fig:atlas-cloud}. The resulting data and logs were uploaded to the CephS3 storage via DynaFed upon job completion.
@@ -79,15 +78,13 @@ This work was made possible by funding from the (funding agency?).
 \section*{References}
 \begin{thebibliography}{9}
 \bibitem{dynafed}
-  Furano~F {\it et al}
+  Dynafed [Compute Software]
   2017
-  Dynafed
   \url{http://cern.ch/lcgdm/dynafed-dynamic-federation-project}
 
 \bibitem{cloud-scheduler}
-  Gable~I {\it et al}
+  Cloud Scheduler [Computer Software]
   2017
-  Cloud Scheduler
   \url{http://cloudscheduler.org}
 
 \bibitem{openstack}
@@ -135,6 +132,7 @@ This work was made possible by funding from the (funding agency?).
   1996
   ZLIB Compressed Data Format Specification Version 3.3
   {\it  Internet Engineering Task Force} RFC1950
+  
 \bibitem{md5}
   Rivest R
   1992
