@@ -19,18 +19,21 @@
 \ead{frank.berghaus@cern.ch}
 
 \begin{abstract}
-Input data for applications that run in cloud computing centres can be stored at distant repositories, often with multiple copies of the popular data stored at many sites. Locating and retrieving the remote data can be challenging, and we believe that federating the storage can address this problem. A federation would locate the closest copy of the data on the basis of GeoIP information. Currently we are using the dynamic data federation DynaFed~\cite{dynafed}, a software solution developed by CERN IT. DynaFed supports several industry standards for connection protocols like Amazon's S3, Microsoft's Azure, as well as WebDAV and HTTP. Dynafed functions as an abstraction layer under which protocol-dependent authentication details are  hidden from the user, requiring the user to only provide an X509 certificate. We have setup an instance of DynaFed and integrated it into the ATLAS Data Distribution Management system. We report on the challenges faced during the installation and integration. We have tested ATLAS analysis jobs submitted by the PanDA~\cite{panda} production system and we report on our first experiences with its operation.
+Input data for applications that run in cloud computing centres can be stored at distant repositories, often with multiple copies of the popular data stored at many sites. Locating and retrieving the remote data can be challenging, and we believe that federating the storage can address this problem. A federation would locate the closest copy of the data on the basis of GeoIP information. Currently we are using the dynamic data federation DynaFed~\cite{dynafed}, a software solution developed by CERN IT. DynaFed supports several industry standards for connection protocols like Amazon's S3, Microsoft's Azure, as well as WebDAV and HTTP. Dynafed functions as an abstraction layer under which protocol-dependent authentication details are  hidden from the user, requiring the user to only provide an X509 certificate.
+ % We have setup an instance of DynaFed and integrated it into the ATLAS Data Distribution Management system. We report on the challenges faced during the installation and integration. We have tested ATLAS analysis jobs submitted by the PanDA~\cite{panda} production system and we report on our first experiences with its operation.
 \end{abstract}
 
 \section{Introduction}
-Our goal is run data-intensive applications on globally distributed opportunistic resources that have no local grid storage. The ATLAS experiment leverages a globally distributed system of infrastructure as a service (IaaS) clouds as part of its distributed computing system. These resources are integrated into the ATLAS distributed computing system using the Cloud Scheduler~\cite{cloud-scheduler} technology developed at the University of Victoria. These IaaS resources are used opportunistically, and do not support any local grid infrastructure.
+We aim to run data-intensive applications on globally distributed opportunistic resources that have no local grid storage. The ATLAS experiment leverages a globally distributed system of infrastructure as a service (IaaS) clouds as part of its distributed computing system. These resources are integrated into the ATLAS distributed computing system using the Cloud Scheduler~\cite{cloud-scheduler} technology developed at the University of Victoria. These IaaS resources are used opportunistically, and do not support any local grid infrastructure.
 
 The workflows executed by high energy physics experiments often demand large volumes of input data or produce a significant volume of output data. We aim to use a data federation, such as DynaFed, to redirect the applications running on opportunistic resources to the optimal storage endpoint to retrieve input or deposit output data. We also aim to integrate storage solutions offered by cloud providers into the ATLAS distributed data management system using DynaFed.
 
 In this paper we explain a system leveraging Cloud Scheduler and Dynafed which successfully executed functional test jobs as part of the ATLAS distributed computing system on the CERN OpenStack~\cite{openstack} cloud resource that read their input from and wrote their output to an object store implemented using Ceph~\cite{ceph} and exposing an S3~\cite{s3} interface.
 
 \section{Conceptual Design}
-The ATLAS experiment leverages the resources of the Worldwide LHC Computing Grid, WLCG~\cite{wlcg}. The computing centres that are part of the WLCG and support ATLAS provide a global storage infrastructure for the experiment data and simulated events. While the central ATLAS computing infrastructure uses purpose-specific protocols to access the content of these grid storage elements, they can also be accessed using standard protocols, namely HTTP and WebDAV. DynaFed supports storage backends that offer HTTP and WebDAV access and promises sufficient scalability to create the appearance of a single virtual namespace for the entire ATLAS data catalogue.  Figure~\ref{fig:conceptual-design} shows how DynaFed could unify the namespaces of attached storage elements into a single namespace.
+The ATLAS experiment leverages the resources of the Worldwide LHC Computing Grid, WLCG~\cite{wlcg}. The computing centres that are part of the WLCG and support ATLAS provide a global storage infrastructure for the experiment data and simulated events.
+%While the central ATLAS computing infrastructure uses purpose-specific protocols to access the content of these grid storage elements,
+They may be accessed using standard protocols such as HTTP and WebDAV. Dynafed supports storage backends that offer HTTP and WebDAV access and promises sufficient scalability to create the appearance of a single virtual namespace for the entire ATLAS data catalogue.  Figure~\ref{fig:conceptual-design} shows how Dynafed could unify the namespaces of attached storage elements into a single namespace.
 
 \begin{figure}
   \centering
@@ -42,15 +45,17 @@ The ATLAS experiment leverages the resources of the Worldwide LHC Computing Grid
 Cloud storage systems are object stores that expose a well-defined interface such as S3, Swift, or Azure. DynaFed supports these protocols as storage backends. On the user-facing side DynaFed still presents an HTTP or WebDAV interface implementing authentication and authorization through public key infrastructure with grid extensions~\cite{voms}. When DynaFed forwards clients to cloud storage systems, it translates their grid credentials to pre-signed URL that permit, for a limited time, access to the cloud storage system.
 
 \section{Data Access}
-The dynamic federation used for this work was configured to use three endpoints: one at CERN, one at TRIUMF, and one at the University of Victoria. Each endpoint was a CephS3 object store. Figure~\ref{tab:dynafed-arch} illustrates the task division within the dynamic federation to handle client requests.
+The dynamic federation used for this work was configured to use three endpoints: one at CERN, one at TRIUMF, and one at the University of Victoria. Each endpoint was a CephS3 object store. Table~\ref{tab:dynafed-arch} illustrates the task division within the dynamic federation to handle client requests.
 
-To access data through DynaFed a client makes a request for a file using WebDAV or HTTP. WebDAV is the appropriate protocol for interacting with files and file systems, so we will focus on it from here on. In our configuration the DynaFed only allows access to members of the ATLAS Virtual Organization. That means the client must provide either a certificate and key combination or a proxy credential with the request. The credential must be signed by a trusted certificate authority. If the credential contains VOMS extensions certifying the user to be a member of the ATLAS collaboration, access is granted. Should the client provide an X509 credential without VOMS extensions the DynaFed checks that credential against all current members of the ATLAS collaboration and grants access if a match is found. Finally, there are privileged accounts for administrators and data management services. Authorized clients are redirected to a signed URL on the closest CephS3 endpoint. Authorization is granted explicitly for reading, writing, listing, and/or deleting operations.
+To access data through DynaFed a client makes a request for a file using WebDAV or HTTP.%WebDAV is the appropriate protocol for interacting with files and file systems, so
+We will focus on WebDAV from here on. In our configuration the DynaFed only allows access to members of the ATLAS Virtual Organization. The client must provide X509 credentials with the request. The credential must be signed by a trusted certificate authority. If the credential contains VOMS extensions certifying the user to be a member of the ATLAS collaboration, access is granted. Without VOMS extensions the DynaFed checks the credential against all current members of the ATLAS collaboration and grants access if a match is found. Administrators and data management services have privileged accounts. Authorized clients are redirected to a signed URL on the closest CephS3 endpoint. Authorization is granted explicitly for reading, writing, listing, and/or deleting operations.
 
-When a file is requested the dynamic federation checks whether the locations of the file are already in its cache. If so the cached entry is used, otherwise each endpoint is queried for the file after name translation to that endpoint. DynaFed waits for responses up to some given timeout\footnote{Set to 3~seconds here}. Responses are collected and cached. The resulting endpoints are evaluated for proximity to the client and the client is redirected to the closest copy. The DynaFed regularly polls all connected endpoints to determine if they are reachable. Should an endpoint be unresponsive, requests will not be forwarded to it. This should increase the stability of the storage system as a whole by dynamically adapting to storage endpoint failures.
+When a file is requested the dynamic federation checks whether the locations of the file are already in its cache. If so the cached entry is used, otherwise each endpoint is queried for the file after name translation to that endpoint. DynaFed waits for responses\footnote{Up to a given timeout set to 3~seconds here} to collect and cache. The resulting endpoints are evaluated for proximity to the client and the client is redirected to the closest copy. The DynaFed regularly polls all connected endpoints to determine if they are reachable. Should an endpoint be unresponsive, requests will not be forwarded to it.
+% This should increase the stability of the storage system as a whole by dynamically adapting to storage endpoint failures.
 
 \begin{table}
   \centering
-  \caption{The dynamic web federation is an Apache running the LCGDM implementation of WebDAV. The namespace usually managed by LCGDM has been replaced by the uniform general redirector (UGR) which translates the requests to the web file system to the connected endpoints. The endpoint modules handle the communication with the configured endpoints. All requests are cached in memory on the server as well as in a second-level cache which may be shared across multiple load-balanced servers.}
+  \caption{The dynamic web federation is an Apache server running the LCGDM implementation of WebDAV. The namespace usually managed by LCGDM has been replaced by the uniform general redirector (UGR) which translates the requests to the web file system to the connected endpoints. The endpoint modules handle the communication with the configured endpoints. All requests are cached in memory on the server as well as in a second-level cache which may be shared across multiple load-balanced servers.}
   \label{tab:dynafed-arch}
   \begin{tabular}{ lllp{10cm} }
   \hline
@@ -69,7 +74,7 @@ When a file is requested the dynamic federation checks whether the locations of 
   \end{tabular}
 \end{table}
 
- It is also possible to query a metalink which returns a XML list of all copies of the queried file. In the future we wish to implement chunked downloads from multiple locations using this metalink and the aria2c copy tool. Should the client make a request to write, Dynafed redirects the client to the geographically closest writeable storage element.
+ %It is also possible to query a metalink which returns a XML list of all copies of the queried file. In the future we wish to implement chunked downloads from multiple locations using this metalink and the aria2c copy tool. Should the client make a request to write, Dynafed redirects the client to the geographically closest writeable storage element.
 
 
 \section{Application Workflow}
@@ -77,7 +82,7 @@ In order to integrate the dynamic federation into the ATLAS distributed computin
 
 The input datasets for analysis and production functional tests were transferred to the dynamic federation using the file transfer service at CERN. Once the transfers completed successfully the data was registered manually in the Rucio data catalogue.
 
-With the input data registered in the Rucio data catalogue it was possible to run grid jobs against the data in the dynamic federation. The jobs were executed on virtual machines hosted on the CERN OpenStack using the Cloud Scheduler technology system illustrated in figure~\ref{fig:atlas-cloud}. The resulting data and logs were uploaded to the CephS3 storage via DynaFed upon job completion.
+With the input data registered in the data catalogue it was possible to run grid jobs against the data in the dynamic federation. The jobs were executed on virtual machines hosted on the CERN OpenStack using the Cloud Scheduler technology as illustrated in figure~\ref{fig:atlas-cloud}. The resulting data and logs were uploaded to the CephS3 storage via DynaFed upon job completion.
 
 \begin{figure}
   \includegraphics[width=\textwidth]{atlas-cloud-system.png}
@@ -85,10 +90,11 @@ With the input data registered in the Rucio data catalogue it was possible to ru
   \label{fig:atlas-cloud}
 \end{figure}
 
-Some additional development is required for full integration of cloud storage into the ATLAS distributed data management: bulk transfers negotiated between storage endpoints using the HTTP or WebDAV protocols must be fully supported, and the data management system must be able to parse the checksums of files on cloud storage. The first point requires upgrades to the logic of Rucio's conveyer mechanism. The second point requires Rucio to fully support MD5~\cite{md5} checksums, which are commonly used in cloud storage systems, alongside ADLER32~\cite{adler32} checksums which are the standard on the worldwide LHC computing grid. This will likely involve some additional logic to the grid file access libraries since these checksums are also communicated in a different fashion on cloud storage as opposed to grid storage~\cite{content-md5, request-digest}.
+Some additional development is required for full integration of cloud storage into the ATLAS distributed data management: bulk transfers negotiated between storage endpoints using the HTTP or WebDAV protocols must be fully supported, and the data management system must be able to parse the checksums of files on cloud storage.
+% The first point requires upgrades to the logic of Rucio's conveyer mechanism. The second point requires Rucio to fully support MD5~\cite{md5} checksums, which are commonly used in cloud storage systems, alongside ADLER32~\cite{adler32} checksums which are the standard on the worldwide LHC computing grid. This will likely involve some additional logic to the grid file access libraries since these checksums are also communicated in a different fashion on cloud storage as opposed to grid storage~\cite{content-md5, request-digest}.
 
 \section{Summary}
-It was shown that ATLAS jobs can retrieve and deposit their data on a cloud storage system accessed via a dynamic federation using the WebDAV protocol. The jobs ran on virtual machine instances in a cloud and could be scheduled anywhere in the distributed cloud system currently running as part of the ATLAS production system. Further development is necessary to allow the execution of production or analysis jobs against the dynamic federation. Work is ongoing to integrate the dynamic federation with the Belle-II experiment and thereby the DIRAC workload management system. While this development is being pursued against opportunistic cloud resources it would also be very useful in the context of volunteer resources~\cite{boinc}.
+It was shown that ATLAS jobs can retrieve and deposit their data on a cloud storage system accessed via a dynamic federation using the WebDAV protocol. The jobs ran on virtual machine instances in a cloud and could be scheduled anywhere in the distributed cloud system currently running as part of the ATLAS production system. Further development is necessary to allow the execution of production or analysis jobs against the dynamic federation. Work is ongoing to integrate the dynamic federation with the Belle-II experiment and the DIRAC workload management system. While this development is being pursued against opportunistic cloud resources it should also be useful in the context of volunteer resources~\cite{boinc}.
 
 \section*{References}
 \begin{thebibliography}{9}
@@ -139,29 +145,29 @@ It was shown that ATLAS jobs can retrieve and deposit their data on a cloud stor
   2017
   \url{http://rucio.cern.ch}
 
-\bibitem{md5}
-  Rivest R
-  1992
-  The MD5 Message-Digest Algorithm
-  {\it  Internet Engineering Task Force} RFC1321
-
-\bibitem{adler32}
-  Deutsch P and Gailly J-L
-  1996
-  ZLIB Compressed Data Format Specification Version 3.3
-  {\it  Internet Engineering Task Force} RFC1950
-
-\bibitem{content-md5}
-  Myers J
-  1995
-  The Content-MD5 Header Field
-  {\it  Internet Engineering Task Force} RFC1864
-
-\bibitem{request-digest}
-  Mogul J
-  2002
-  Instance Digests in HTTP
-  {\it  Internet Engineering Task Force} RFC3230
+% \bibitem{md5}
+%   Rivest R
+%   1992
+%   The MD5 Message-Digest Algorithm
+%   {\it  Internet Engineering Task Force} RFC1321
+%
+% \bibitem{adler32}
+%   Deutsch P and Gailly J-L
+%   1996
+%   ZLIB Compressed Data Format Specification Version 3.3
+%   {\it  Internet Engineering Task Force} RFC1950
+%
+% \bibitem{content-md5}
+%   Myers J
+%   1995
+%   The Content-MD5 Header Field
+%   {\it  Internet Engineering Task Force} RFC1864
+%
+% \bibitem{request-digest}
+%   Mogul J
+%   2002
+%   Instance Digests in HTTP
+%   {\it  Internet Engineering Task Force} RFC3230
 
 \bibitem{boinc}
   Cameron D and Wu W
