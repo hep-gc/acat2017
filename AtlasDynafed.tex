@@ -24,14 +24,14 @@
 \ead{frank.berghaus@cern.ch}
 
 \begin{abstract}
-Input data for applications that run in cloud computing centres can be stored at distant repositories, often with multiple copies of the popular data stored at many sites. Locating and retrieving the remote data can be challenging, and we believe that federating the storage can address this problem. A federation would locate the closest copy of the data on the basis of GeoIP information. Currently we are using the dynamic data federation Dynafed~\cite{dynafed}, a software solution developed by CERN IT. Dynafed supports several industry standards for connection protocols like Amazon's S3, Microsoft's Azure, as well as WebDAV and HTTP. Dynafed functions as an abstraction layer under which protocol-dependent authentication details are  hidden from the user, requiring the user to only provide an X509 certificate.
- % We have setup an instance of Dynafed and integrated it into the ATLAS Data Distribution Management system. We report on the challenges faced during the installation and integration. We have tested ATLAS analysis jobs submitted by the PanDA~\cite{panda} production system and we report on our first experiences with its operation.
+Input data for applications that run in cloud computing centres can be stored at distant repositories, often with multiple copies of the popular data stored at many sites. Locating and retrieving the remote data can be challenging, and we believe that federating the storage can address this problem. A federation would locate the closest copy of the data on the basis of GeoIP information. Currently we are using the dynamic data federation Dynafed, a software solution developed by CERN IT. Dynafed supports several industry standards for connection protocols like Amazon's S3, Microsoft's Azure, as well as WebDAV and HTTP. Dynafed functions as an abstraction layer under which protocol-dependent authentication details are  hidden from the user, requiring the user to only provide an X509 certificate.
+ % We have setup an instance of Dynafed and integrated it into the ATLAS Data Distribution Management system. We report on the challenges faced during the installation and integration. We have tested ATLAS analysis jobs submitted by the PanDA production system and we report on our first experiences with its operation.
 \end{abstract}
 
 \section{Introduction}
 We aim to run data-intensive applications on globally distributed opportunistic resources that have no local grid storage. The ATLAS experiment leverages a globally distributed system of infrastructure as a service (IaaS) clouds as part of its distributed computing system. These resources are integrated into the ATLAS distributed computing system using the Cloud Scheduler~\cite{cloud-scheduler} technology developed at the University of Victoria. These IaaS resources are used opportunistically, and do not support any local grid infrastructure.
 
-The workflows executed by high energy physics experiments often demand large volumes of input data or produce a significant volume of output data. We aim to use a data federation, such as Dynafed, to redirect the applications running on opportunistic resources to the optimal storage endpoint to retrieve input or deposit output data. We also aim to integrate storage solutions offered by cloud providers into the ATLAS distributed data management system using Dynafed.
+The workflows executed by high energy physics experiments often demand large volumes of input data or produce a significant volume of output data. We aim to use a data federation, such as Dynafed~\cite{dynafed}, to redirect the applications running on opportunistic resources to the optimal storage endpoint to retrieve input or deposit output data. We also aim to integrate storage solutions offered by cloud providers into the ATLAS distributed data management system using Dynafed.
 
 In this paper we explain a system leveraging Cloud Scheduler and Dynafed which successfully executed functional test jobs as part of the ATLAS distributed computing system on the CERN OpenStack~\cite{openstack} cloud resource that read their input from and wrote their output to an object store implemented using Ceph~\cite{ceph} and exposing an S3~\cite{s3} interface.
 
@@ -92,7 +92,7 @@ With the input data registered in the data catalogue it was possible to run grid
 
 \begin{figure}
   \includegraphics[width=\textwidth]{atlas-cloud-system.png}
-  \caption{A client (AutoPyFactory or Harvester) submits pilot wrapper scripts to an HTCondor queue. The queue is monitored by a Cloud Scheduler. The Cloud Scheduler makes requests to connected cloud interfaces in response to queued jobs. The cloud infrastructures create virtual machine instances and provide user-data to cloud-init running in the virtual machines for configuration. The VM instances are configured to connect to HTCondor and start consuming jobs from the queue. The jobs are pilot wrapper scripts which download the pilot. The pilot gets tasks from a PanDA queue and uses Rucio to download input data and upload results. Rucio is configured to contact the dynamic federation using the WebDAV protocol. The federation forwards the Rucio client to the closest available storage element.}
+  \caption{A client (AutoPyFactory or Harvester) submits pilot wrapper scripts to an HTCondor queue. The queue is monitored by a Cloud Scheduler. The Cloud Scheduler makes requests to connected cloud interfaces in response to queued jobs. The cloud infrastructures create virtual machine instances and provide user-data to cloud-init running in the virtual machines for configuration. The VM instances are configured to connect to HTCondor and start consuming jobs from the queue. The jobs are pilot wrapper scripts which download the pilot. The pilot gets tasks from a PanDA~\cite{panda} queue and uses Rucio to download input data and upload results. Rucio is configured to contact the dynamic federation using the WebDAV protocol. The federation forwards the Rucio client to the closest available storage element.}
   \label{fig:atlas-cloud}
 \end{figure}
 
@@ -104,21 +104,15 @@ It was shown that ATLAS jobs can retrieve and deposit their data on a cloud stor
 
 \section*{References}
 \begin{thebibliography}{9}
-\bibitem{dynafed}
-  Dynafed [Compute Software]
-  2017
-  \url{http://cern.ch/lcgdm/dynafed-dynamic-federation-project}
-
-\bibitem{panda}
-  Maeno T
-  2008
-  PanDA : Distributed Production and Distributed Analysis System for ATLAS
-  {\it Journal for Physics} {\bf 119} 6
-
 \bibitem{cloud-scheduler}
   Cloud Scheduler [Computer Software]
   2017
   \url{http://cloudscheduler.org}
+
+\bibitem{dynafed}
+  Dynafed [Compute Software]
+  2017
+  \url{http://cern.ch/lcgdm/dynafed-dynamic-federation-project}
 
 \bibitem{openstack}
   OpenStack [Computer Software]
@@ -174,6 +168,12 @@ It was shown that ATLAS jobs can retrieve and deposit their data on a cloud stor
 %   2002
 %   Instance Digests in HTTP
 %   {\it  Internet Engineering Task Force} RFC3230
+
+\bibitem{panda}
+  Maeno T
+  2008
+  PanDA : Distributed Production and Distributed Analysis System for ATLAS
+  {\it Journal for Physics} {\bf 119} 6
 
 \bibitem{boinc}
   Cameron D and Wu W
