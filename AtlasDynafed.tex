@@ -22,12 +22,11 @@
 \ead{frank.berghaus@cern.ch}
 
 \begin{abstract}
-Input data for applications that run in cloud computing centres can be stored at distant repositories, often with multiple copies of the popular data stored at many sites. Locating and retrieving the remote data can be challenging, and we believe that federating the storage can address this problem. A federation would locate the closest copy of the data on the basis of GeoIP information. Currently we are using the dynamic data federation Dynafed, a software solution developed by CERN IT. Dynafed supports several industry standards for connection protocols like Amazon's S3, Microsoft's Azure, as well as WebDAV and HTTP. Dynafed functions as an abstraction layer under which protocol-dependent authentication details are  hidden from the user, requiring the user to only provide an X509 certificate.
- % We have setup an instance of Dynafed and integrated it into the ATLAS Data Distribution Management system. We report on the challenges faced during the installation and integration. We have tested ATLAS analysis jobs submitted by the PanDA production system and we report on our first experiences with its operation.
+Input data for applications that run in cloud computing centres can be stored at distant repositories, often with multiple copies of the popular data stored at many sites. Locating and retrieving the remote data can be challenging, and we believe that federating the storage can address this problem. A federation would locate the closest copy of the data on the basis of GeoIP information. Currently we are using the dynamic data federation Dynafed, a software solution developed by CERN IT. Dynafed supports several industry standards for connection protocols like Amazon's S3, Microsoft's Azure, as well as WebDAV and HTTP. Dynafed functions as an abstraction layer under which protocol-dependent authentication details are  hidden from the user, requiring the user to only provide an X509 certificate. We have setup an instance of DynaFed and integrated it into the ATLAS Data Distribution Management system. We report on the challenges faced during the installation and integration. We have tested ATLAS analysis jobs submitted by the PanDA production system and we report on our first experiences with its operation.
 \end{abstract}
 
 \section{Introduction}
-We aim to run data-intensive applications on globally distributed opportunistic resources that have no local grid storage. The ATLAS experiment leverages a globally distributed system of infrastructure as a service (IaaS) clouds as part of its distributed computing system. These resources are integrated into the ATLAS distributed computing system using the Cloud Scheduler~\cite{cloud-scheduler} technology developed at the University of Victoria. These IaaS resources are used opportunistically, and do not support any local grid infrastructure.
+We aim to run data-intensive applications on globally distributed opportunistic resources that have no local grid storage. The ATLAS~\cite{atlas} experiment leverages a globally distributed system of infrastructure as a service (IaaS) clouds as part of its distributed computing system. These resources are integrated into the ATLAS distributed computing system using the Cloud Scheduler~\cite{cloud-scheduler} technology developed at the University of Victoria. These IaaS resources are used opportunistically, and do not support any local grid infrastructure.
 
 The workflows executed by high energy physics experiments often demand large volumes of input data or produce a significant volume of output data. We aim to use a data federation, such as Dynafed~\cite{dynafed}, to redirect the applications running on opportunistic resources to the optimal storage endpoint to retrieve input or deposit output data. We also aim to integrate storage solutions offered by cloud providers into the ATLAS distributed data management system using Dynafed.
 
@@ -102,6 +101,10 @@ It was shown that ATLAS jobs can retrieve and deposit their data on a cloud stor
 
 \section*{References}
 \begin{thebibliography}{9}
+\bibitem{atlas}
+  The ATLAS Collaboration 2008 The ATLAS Experiment at the CERN Large Hadron Collider
+  {\it Journal of Instrumentation} {\bf 3} 08 S08003
+
 \bibitem{cloud-scheduler}
   Cloudscheduler project, "Cloudscheduler" [software], version 1.12, 2017, Available from \url{http://cloudscheduler.org/} [accessed 2017-10-20]
 
